@@ -1,11 +1,8 @@
 <?php
 
-use  Clases\Conexion\Conexion;
-
 spl_autoload_register(function ($clase) {
-    require_once './'.str_replace('\\','/',$clase).'.php';
+    require_once './' . str_replace('\\', '/', $clase) . '.php';
 });
 
-echo "hola soy index <br>";
-
-$obj =  Conexion::execute();
+//escribir codigo desde aqui
+echo "page index";

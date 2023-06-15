@@ -1,8 +1,8 @@
 {
     "conexion": {
         "server": "localhost",
-        "user": "root",
-        "password": "",
+        "user": "rmolinao",
+        "password": "Isaa#2719$",
         "dataBase": "apirest",
         "port": "3306"
     }

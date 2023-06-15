@@ -1,4 +1,17 @@
 RewriteEngine On
+
+#estas lineas son para quitar la extension .php
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %{REQUEST_FILENAME}.php -f
+RewriteRule ^(.*)$ $1.php
+
+#estas lineas son para quitar la extension .html
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %{REQUEST_FILENAME}.html -f
+RewriteRule ^(.*)$ $1.html
+
+#con esta linea si la ruta no es un archivo, ni una parpeta
+#Reescribe al index 
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
 RewriteRule ^(.+?)/?$ index.php?url=$1 [L,QSA]
