@@ -4,12 +4,13 @@ namespace Controladores;
 
 use DAO\Interfaces\IServices;
 use Modelos\Entity;
-use Modelos\RestApiSpecifications;
+// use Modelos\RestApiSpecifications;
+use Modelos\Authentication;
 
-class RestController
+class RestController extends Authentication
 {
 
-    use RestApiSpecifications;
+    // use RestApiSpecifications;
 
     private $requestMethod,
         $servicio;
@@ -50,60 +51,105 @@ class RestController
         if ($this->requestMethod === "POST") {
             $bodyRaw = file_get_contents("php://input");
             $atributos = json_decode($bodyRaw, true);
-            $entidad = new Entity($this->servicio->getEntityServiceName(), $atributos);
-            $entity = $this->servicio->register($entidad);
-            if (!empty($entity)) {
-                echo self::status_Code_Response_200(
-                    "register Ok",
-                    "se guardaron el elemento  correctamente",
-                    201,
-                    ["element" => $entity->attributelist]
-                );
+            //aqui se debe colocar el codigo de la autenticacion
+            $validacion = new Authentication();
+            if ($validacion->validarTokent($atributos)) {
+                $entidad = new Entity($this->servicio->getEntityServiceName(), $atributos);
+                $entity = $this->servicio->register($entidad);
+                if (!empty($entity)) {
+                    echo self::status_Code_Response_200(
+                        "register Ok",
+                        "se guardaron el elemento  correctamente",
+                        201,
+                        ["element" => $entity->attributelist]
+                    );
+                }
             }
+
             return;
         }
     }
     public function answerRequestMethodPUT(): void
     {
         if ($this->requestMethod === "PUT") {
-            if (isset($_GET["id"])) {
-                $bodyRaw = file_get_contents("php://input");
-                $atributos = json_decode($bodyRaw, true);
-                $entidad = new Entity($this->servicio->getEntityServiceName(), $atributos);
-                $entity = $this->servicio->update($entidad,intval($_GET["id"]));
-                if (!empty($entity)) {
-                    echo self::status_Code_Response_200(
-                        "update Ok",
-                        "se actualizo el elemento  correctamente",
-                        200,
-                        ["element" => $entity->attributelist]
-                    );
-                }
+            if (!isset($_GET["id"])) {
+                echo self::status_Code_Response_400('error parametro', 'se requiere el parametro id en la direccion URL');
                 return;
             }
+            $bodyRaw = file_get_contents("php://input");
+            $atributos = json_decode($bodyRaw, true);
+            $validacion = new Authentication();
+            if ($validacion->validarTokent($atributos)) {
+                $entidad = new Entity($this->servicio->getEntityServiceName(), $atributos);
+                $entity = $this->servicio->update($entidad, intval($_GET["id"]));
+                if (!$entity) {
+                    echo self::status_Code_Response_200(
+                        "notificacion",
+                        "no se encontraron nuevos dados, no se realizaron cambios",
+                        200
+                    );
+                    return;
+                }
+                echo self::status_Code_Response_200(
+                    "update Ok",
+                    "se actualizo el elemento  correctamente",
+                    200,
+                    ["element" => $entity->attributelist]
+                );
+            }
+            return;
         }
     }
 
     public function answerRequestMethodDELETE(): void
     {
         if ($this->requestMethod === "DELETE") {
-            if (isset($_GET["id"])) {
+            if (!isset($_GET["id"])) {
+                if(isset(getallheaders()['id'])){
+                    $_GET["id"]= getallheaders()['id'];
+                }
+                else {
+                    echo self::status_Code_Response_400('no existe el parametro id', 'no hadeclarado el parametro id en la ruta de la petiicon');
+                    return;
+                }
+            }
+
+            $bodyRaw = file_get_contents("php://input");
+            $token = json_decode($bodyRaw, true);
+
+            if (!isset($token['token'])) {
+                if(isset(getallheaders()['token']))
+                    $token = getallheaders();
+            }
+
+            $validacion = new Authentication();
+
+            if ($validacion->validarTokent($token)) {
+
                 $atributos = $this->servicio->get(intval($_GET["id"]));
                 $entity = new Entity($this->servicio->getEntityServiceName(),$atributos);
 
                 $action = $this->servicio->delete(intval($_GET["id"]));
-                if ($action) {
-                    echo self::status_Code_Response_200(
-                        "delete Ok",
-                        "se elimino el elemento correctamente",
-                        201,
-                        ["element" => $entity->attributelist]
 
-                    ); 
+                if ($action == false) {
+                    echo self::status_Code_Response_200(
+                        "no existe el elemento",
+                        "el elemento que desea eliminar no existe",
+                        201
+                    );
+                    return;
                 }
-                return;  
+                echo self::status_Code_Response_200(
+                    "delete Ok",
+                    "se elimino el elemento correctamente",
+                    200,
+                    ["element" => $entity->attributelist]
+
+                );
+                return;
             }
+
         }
-        
+
     }
 }

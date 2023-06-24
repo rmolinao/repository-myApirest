@@ -40,7 +40,7 @@ class PacientesDaoImpl extends Conexion  implements IPacientesDao
             return $record[0];
         }
         return [];
-    
+
     }
     public function deleteById(int $id): int
     {
@@ -51,7 +51,7 @@ class PacientesDaoImpl extends Conexion  implements IPacientesDao
 
     private  function update(Entity $entity) :int
     {
-        $query = "UPDATE `apirest`.`{$entity->getName()}` SET `DNI` = '{$entity->attributelist["DNI"]}', `Nombre` = '{$entity->attributelist["Nombre"]}', `Direccion` = '{$entity->attributelist["Direccion"]}', `CodigoPostal` = '{$entity->attributelist["CodigoPostal"]}', `Telefono` = '{$entity->attributelist["Telefono"]}', `Genero` = '{$entity->attributelist["Genero"]}', `FechaNacimiento` = '{$entity->attributelist["FechaNacimiento"]}', `Correo` = '{$entity->attributelist["Correo"]}' WHERE (`PacienteId` = '{$entity->attributelist["PacienteId"]}')";
+        $query = "UPDATE `apirest`.`{$entity->getName()}` SET `DNI` = '{$entity->attributelist["DNI"]}', `Nombre` = '{$entity->attributelist["Nombre"]}', `Direccion` = '{$entity->attributelist["Direccion"]}', `CodigoPostal` = '{$entity->attributelist["CodigoPostal"]}', `Telefono` = '{$entity->attributelist["Telefono"]}', `Genero` = '{$entity->attributelist["Genero"]}', `FechaNacimiento` = '{$entity->attributelist["FechaNacimiento"]}', `Correo` = '{$entity->attributelist["Correo"]}' WHERE (`PacienteId` = {$entity->attributelist["PacienteId"]})";
 
         return $this->conexion->nonQuery($query);
     }

@@ -56,7 +56,7 @@ class Conexion implements IConexion
             $this->port = $value['port'];
         }
     }
-    
+
     public function getRecord(string $query, array $parameters = null): ?array
     {
         $prepareStament = $this->pdo->prepare($query);

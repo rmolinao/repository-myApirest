@@ -29,11 +29,10 @@ trait RestApiSpecifications
         ]);
     }
 
-    static public function status_Code_Response_500(
-        string $title = "Error Interno",
-        string $detail = "se presento un inconveniete al insertar los registros",
-        int $code = 500
-    ): string {
+    static public function status_Code_Response_500(string $title  = "Error Interno",
+                                                    string $detail = "se presento un inconveniete al insertar los registros",
+                                                    int    $code   = 500): string
+    {
         http_response_code($code);
         return json_encode([
             "errors" => [
@@ -44,29 +43,27 @@ trait RestApiSpecifications
         ]);
     }
 
-    static public function status_Code_Response_400(
-        string $title = "Invalid record",
-        string $detail = "Registro invalido",
-        int $code = 400
-    ): string {
-        http_response_code($code);
-        return json_encode([
-            "errors" => [
-                "status" => http_response_code(),
-                "title" => $title,
-                "detail" => $detail
-            ],
-        ]);
+    static public function status_Code_Response_400(string $title  = "Invalid record",
+                                                    string $detail = "Registro invalido",
+                                                    int    $code   =  400): string
+        {
+            http_response_code($code);
+            return json_encode([
+                "errors" => [
+                    "status" => http_response_code(),
+                    "title" => $title,
+                    "detail" => $detail
+                ],
+            ]);
     }
 
-    static public function status_Code_Response_200(
-        string $title = null,
-        string $content = null,
-        int $code = 200,
-        array $attributes = null
-    ): string {
+    static public function status_Code_Response_200(string $title     = null,
+                                                    string $content   = null,
+                                                    int    $code      = 200,
+                                                    array $attributes = null): string
+    {
         http_response_code($code);
-        // if ($attributes === null) {
+        // if (!$attributes) {
             $attributes["title"] = $title;
             $attributes["content"] = $content;
         // }

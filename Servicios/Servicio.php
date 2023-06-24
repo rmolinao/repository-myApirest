@@ -6,16 +6,16 @@ use DAO\Interfaces\IServices;
 use DAO\Interfaces\ICrudRepository;
 
 class Servicio implements IServices
-{   
-    private 
+{
+    private
         $daoImplement,
         $entityServiceName;
     public function __construct(ICrudRepository $daoImplement, string $entityServiceName)
     {
         $this->daoImplement = $daoImplement;
-        $this->entityServiceName = $entityServiceName;             
+        $this->entityServiceName = $entityServiceName;
     }
-    
+
     public function getAll($page = 1): array
     {
         return $this->daoImplement->findAll($page);
@@ -38,6 +38,7 @@ class Servicio implements IServices
     public function update(Entity $entity, int $id): ?Entity
     {
         $attributelist = $this->daoImplement->findById($id);
+
         foreach ($entity->attributelist as $key => $value) {
             $attributelist[$key] = $entity->attributelist[$key];
         }

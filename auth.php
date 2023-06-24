@@ -19,6 +19,6 @@ class App
             print $authentication->login($bodyRaw);
         }
     }
-    
+
 }
 App::main();

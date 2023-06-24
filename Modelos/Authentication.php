@@ -4,6 +4,7 @@ namespace Modelos;
 
 use Modelos\Conexion\Conexion;
 use Modelos\RestApiSpecifications;
+use PDOException;
 
 class Authentication extends Conexion
 {
@@ -19,33 +20,34 @@ class Authentication extends Conexion
     public function login(string $json): ?string
     {
         $data = json_decode($json, true);
+
         if (!isset($data["usuario"]) || !isset($data["password"])) {
             return  self::status_Code_Response_400();
-        } else {
-            $records = $this->getUserData($data["usuario"]);
-            $encryptPassword = parent::encrypt($data["password"]);
-            if ($records) {
-                if ($encryptPassword === $records["Password"]) {
-                    if ($records["Estado"] === "Activo") {
-                        $tokenGenerated = $this->insertToken($records["UsuarioId"]);
-                        if ($tokenGenerated) {
-                            return self::status_Code_Response_200(null,null,200,[
-                                "token" => $tokenGenerated
-                            ]);
-                        }else{
-                             return self::status_Code_Response_500();//generar un error 500
-                        }
-                    } 
-                    else 
-                        return self::status_Code_Response_200("No conten", "el usuario esta in actvo", 203);
-                } else {
-                    return self::status_Code_Response_200("No conten", "el passwaord no existe", 203);
-                }
-            } else {
-                return self::status_Code_Response_200("No conten", "Se ha aceptado la solicitud, pero no existe {$data["usuario"]}", 203);
-            }
         }
-        return null;
+
+        $records = $this->getUserData($data["usuario"]);
+        if (!$records) {
+            return self::status_Code_Response_200("No conten", "Se ha aceptado la solicitud, pero no existe {$data["usuario"]}", 203);
+        }
+
+        $encryptPassword = parent::encrypt($data["password"]);
+        if (!$encryptPassword === $records["Password"]) {
+            return self::status_Code_Response_200("No conten", "el passwaord no existe", 203);
+        }
+
+        if (!$records["Estado"] === "Activo") {
+            return self::status_Code_Response_200("No conten", "el usuario esta in actvo", 203);
+        }
+
+        $tokenGenerated = $this->insertToken($records["UsuarioId"]);
+        if (!$tokenGenerated) {
+            return self::status_Code_Response_500();
+        }
+
+        return self::status_Code_Response_200(null, null, 200, [
+            "token" => $tokenGenerated
+        ]);
+
     }
 
     public function getUserData(string $correo): ?array
@@ -60,18 +62,49 @@ class Authentication extends Conexion
 
     public function insertToken($UsuarioId): ?string
     {
-        $cstrong = true;
-        $token = bin2hex(openssl_random_pseudo_bytes(16, $cstrong));
-        $estado = "Activo";
-        $fecha = date("Y-m-d H:i");
-        $query = "INSERT INTO usuarios_token(UsuarioId, Token, Estado, Fecha)VALUES('$UsuarioId','$token','$estado','$fecha')";
-        $registerToken = $this->connection->nonQuery($query);
-        if ($registerToken) {
-            return $token;
-        } else {
-            return null;
-        }
-        
+        try {
 
+            $cstrong = true;
+            $token = bin2hex(openssl_random_pseudo_bytes(16, $cstrong));
+            $estado = "Activo";
+            $fecha = date("Y-m-d H:i");
+            $query = "INSERT INTO usuarios_token(UsuarioId, Token, Estado, Fecha)VALUES('$UsuarioId','$token','$estado','$fecha')";
+            $registerToken = $this->connection->nonQuery($query);
+            return $registerToken?$token:null;
+
+        } catch (PDOException $exception) {
+            echo $exception->getMessage();
+        }
+    }
+
+    //aqui se debe colocar el codigo de autenticacion
+    public function validarTokent($atributos): bool
+    {
+        $validacion = true;
+        if (!isset($atributos['token'])) {
+            echo self::status_Code_Response_400('no hay Token','no se ha  enviado un token de autenticacion',401);
+            return $validacion = false;
+        }
+
+        $records = $this->buscarTokent($atributos['token']);
+        if (!$records) {
+            echo self::status_Code_Response_400('token Invalido','el token es invalio o ha caducado',401);
+            return $validacion = false;
+        }
+
+        //
+        return $validacion;
+    }
+
+    private function buscarTokent(string $token): ?array
+    {
+        try {
+
+            $query = "SELECT TokenId,UsuarioId FROM usuarios_token WHERE Token = :token";
+            $records = $this->connection->getRecord($query,[':token'=>$token]);
+            return $records?$records:null;
+        } catch (PDOException $exception) {
+            echo $exception->getMessage();
+        }
     }
 }
