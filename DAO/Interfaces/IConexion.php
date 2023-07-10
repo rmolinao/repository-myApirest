@@ -2,7 +2,7 @@
 namespace DAO\Interfaces;
 
 interface IConexion {
-    
+
     public static function getConnectionInstance(): IConexion;
 
     public function getRecord(string $query, array $parameters = null): ?array;

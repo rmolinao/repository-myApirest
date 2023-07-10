@@ -78,7 +78,7 @@ class Authentication extends Conexion
     }
 
     //aqui se debe colocar el codigo de autenticacion
-    public function validarTokent($atributos): bool
+    public function validarTokent(array $atributos): bool
     {
         $validacion = true;
         if (!isset($atributos['token'])) {

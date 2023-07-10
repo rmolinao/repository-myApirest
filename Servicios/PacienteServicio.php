@@ -10,4 +10,5 @@ class PacienteServicio extends Servicio
     {
         parent::__construct(new PacientesDaoImpl(),"pacientes");
     }
+
 }

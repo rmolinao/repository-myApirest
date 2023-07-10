@@ -5,7 +5,7 @@ namespace Modelos\Conexion;
 use PDO;
 use PDOException;
 use DAO\Interfaces\IConexion;
-
+use Exception;
 
 class Conexion implements IConexion
 {
@@ -24,6 +24,7 @@ class Conexion implements IConexion
         try {
             $dsn = "mysql:dbname={$this->dataBase}; host={$this->server}; port={$this->port}";
             $this->pdo = new PDO($dsn, $this->user, $this->password);
+
         } catch (PDOException $ex) {
             echo "Error de Conexion: {$ex->getMessage()}";
         }
@@ -76,9 +77,19 @@ class Conexion implements IConexion
 
     public function nonQueryID(string $query, array $parameters = null): int
     {
-        $prepareStament = $this->pdo->prepare($query);
-        $prepareStament->execute($parameters);
-        return intval($this->pdo->lastInsertId()) ;
+        try {
+                $prepareStament = $this->pdo->prepare($query);
+                $prepareStament->execute($parameters);
+                $prepareStament->closeCursor();
+
+                $r_idpaciente = $this->pdo->query("SELECT @id AS id");
+                $id = $r_idpaciente->fetchColumn();
+
+                return $id;
+
+        } catch (Exception $exception) {
+            echo "error en Modelos.Conexion.nonQueryID::{$exception->getMessage()}";
+        }
     }
 
     private function converterUTF8(array $records):array

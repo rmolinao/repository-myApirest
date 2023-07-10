@@ -4,7 +4,7 @@ namespace Cron;
 use Modelos\Token;
 
 spl_autoload_register(function ($clase) {
-    require_once './' . str_replace('\\', '/', $clase) . '.php';
+    require_once '../' . str_replace('\\', '/', $clase) . '.php';
 });
 
 class ActualizarToken

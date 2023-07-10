@@ -56,9 +56,30 @@ class PacientesDaoImpl extends Conexion  implements IPacientesDao
         return $this->conexion->nonQuery($query);
     }
     private function insert(Entity $entity) :int {
-        $query = "INSERT INTO `apirest`.`{$entity->getName()}` (`DNI`, `Nombre`, `Direccion`, `CodigoPostal`, `Telefono`, `FechaNacimiento`, `Correo`) VALUES ('{$entity->attributelist["DNI"]}', '{$entity->attributelist["Nombre"]}', '{$entity->attributelist["Direccion"]}', '{$entity->attributelist["CodigoPostal"]}', '{$entity->attributelist["Telefono"]}', '{$entity->attributelist["FechaNacimiento"]}', '{$entity->attributelist["Correo"]}')
-        ";
+        $sqlparamertos = [
+            "dni" => $entity->attributelist["DNI"],
+            "nombre" => $entity->attributelist["Nombre"],
+            "direccion" => $entity->attributelist["Direccion"],
+            "codigoPostal" => $entity->attributelist["CodigoPostal"],
+            "telefono" => $entity->attributelist["Telefono"],
+            "genero" => isset($entity->attributelist["Genero"]) ? $entity->attributelist["Genero"] : '',
+            "fechaNacimiento" => $entity->attributelist["FechaNacimiento"],
+            "correo" => $entity->attributelist["Correo"],
+            "imagen" =>$entity->attributelist["Imagen"]
+        ];
+        $query ="call insert_pacientes( :dni,
+                                        :nombre,
+                                        :direccion,
+                                        :codigoPostal,
+                                        :telefono,
+                                        :genero,
+                                        :fechaNacimiento,
+                                        :correo,
+                                        :imagen
+                                        ,@id
+                                        )";
 
-        return $this->conexion->nonQuery($query);
+        return $this->conexion->nonQueryID($query,$sqlparamertos);
+
     }
 }

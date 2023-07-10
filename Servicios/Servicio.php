@@ -29,7 +29,8 @@ class Servicio implements IServices
     public function register(Entity $entity): ?Entity
     {
         $numberRowsAffected = $this->daoImplement->save($entity);
-        if ($numberRowsAffected > 0) {
+        if (isset($numberRowsAffected)) {
+            $entity->attributelist = $this->get($numberRowsAffected);
             return $entity;
         }
         return null;

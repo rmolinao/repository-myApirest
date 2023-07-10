@@ -4,13 +4,12 @@ namespace Controladores;
 
 use DAO\Interfaces\IServices;
 use Modelos\Entity;
-// use Modelos\RestApiSpecifications;
+
 use Modelos\Authentication;
 
 class RestController extends Authentication
 {
 
-    // use RestApiSpecifications;
 
     private $requestMethod,
         $servicio;
@@ -54,6 +53,8 @@ class RestController extends Authentication
             //aqui se debe colocar el codigo de la autenticacion
             $validacion = new Authentication();
             if ($validacion->validarTokent($atributos)) {
+                //aqui trato la Imagen
+                $atributos = $this->validarImagen($atributos);
                 $entidad = new Entity($this->servicio->getEntityServiceName(), $atributos);
                 $entity = $this->servicio->register($entidad);
                 if (!empty($entity)) {
@@ -80,6 +81,7 @@ class RestController extends Authentication
             $atributos = json_decode($bodyRaw, true);
             $validacion = new Authentication();
             if ($validacion->validarTokent($atributos)) {
+
                 $entidad = new Entity($this->servicio->getEntityServiceName(), $atributos);
                 $entity = $this->servicio->update($entidad, intval($_GET["id"]));
                 if (!$entity) {
@@ -99,6 +101,28 @@ class RestController extends Authentication
             }
             return;
         }
+    }
+
+    private function validarImagen(array $atributos)
+    {
+        if (!isset($atributos['Imagen'])) {
+            $atributos['Imagen'] = null;
+            return $atributos;
+        }
+        $atributos['Imagen'] = $this->procesarImagen($atributos['Imagen']);
+        return $atributos;
+    }
+
+    private function procesarImagen($imagen)
+    {
+        $direccion = dirname(__DIR__)."\public\image\\";
+        $partes = explode(';base64,',$imagen);
+        $extension = explode('/',mime_content_type($imagen))[1];
+        $imagen_base64 = base64_decode($partes[1]);
+        $file = $direccion.uniqid().".".$extension;
+        file_put_contents($file,$imagen_base64);
+        return $file;
+
     }
 
     public function answerRequestMethodDELETE(): void
